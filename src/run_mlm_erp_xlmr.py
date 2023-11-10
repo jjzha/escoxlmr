@@ -440,6 +440,7 @@ def main():
                     use_auth_token=True if model_args.use_auth_token else None,
                     )
 
+
     # See more about loading any type of standard or custom dataset (from files, python dict, pandas DataFrame, etc) at
     # https://huggingface.co/docs/datasets/loading_datasets.html.
 
@@ -538,7 +539,8 @@ def main():
                     max_length=max_seq_length,
                     # We use this option because DataCollatorForLanguageModeling (see below) is more efficient when it
                     # receives the `special_tokens_mask`.
-                    # return_special_tokens_mask=True,
+                    return_special_tokens_mask=True,
+                    add_special_tokens=False
                     )
 
         with training_args.main_process_first(desc="dataset map tokenization"):
@@ -556,7 +558,8 @@ def main():
         # efficient when it receives the `special_tokens_mask`.
         def tokenize_function(examples):
             return tokenizer(examples[text_column_name],
-                             # return_special_tokens_mask=True,
+                             return_special_tokens_mask=True,
+                             add_special_tokens=False
                              )
 
         with training_args.main_process_first(desc="dataset map tokenization"):
@@ -676,6 +679,7 @@ def main():
 
     # Training
     if training_args.do_train:
+        logger.info(f"A couple examples: {train_dataset[:3]}")
         checkpoint = None
         if training_args.resume_from_checkpoint is not None:
             checkpoint = training_args.resume_from_checkpoint

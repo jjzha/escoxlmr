@@ -82,7 +82,6 @@ class TextDatasetForEscoRelationPrediction(Dataset):
             current_code = list(segment.keys())[0]
 
             sent_a = segment[current_code]
-
             current_rand_val = random.random()
 
             # random
@@ -130,7 +129,7 @@ class TextDatasetForEscoRelationPrediction(Dataset):
                 label = 2
 
             example = {
-                    "data": f"{sent_a}</s></s>{sent_b}",  # sep token for RoBERTa
+                    "data": f"<s>{sent_a}</s></s>{sent_b}</s>",  # sep token for RoBERTa
                     "drp_label": label
                     }
 
@@ -141,11 +140,7 @@ class TextDatasetForEscoRelationPrediction(Dataset):
 
 def main():
 
-    if not os.path.isfile(f"{sys.argv[1]}/esco_features.json"):
-        TextDatasetForEscoRelationPrediction(file_path=sys.argv[1])
-        exit(1)
-
-    else:
+    if not os.path.isfile(f"{sys.argv[1]}/processed_esco_descriptions_all.json"):
         langs = ["bg", "es", "cs", "da", "de", "et", "el", "en", "fr", "ga", "hr", "it", "lv", "lt", "hu", "mt", "nl",
                  "pl", "pt", "ro", "sk", "sl", "fi", "sv", "is", "no", "ar"]
         tokenizer = pyonmttok.Tokenizer("conservative", joiner_annotate=False)
@@ -173,11 +168,11 @@ def main():
                     # gather statistics
                     avg_len_descriptions += len(tokens)
                     len_descriptions.append(len(tokens))
-                avg_len_alt_labels += len(data["alt_label"] if data.get("alt_label") else [])
-                avg_len_must_skills += len(data["must_skills"] if data.get("must_skills") else [])
-                avg_len_opt_skills += len(data["opt_skills"] if data.get("opt_skills") else [])
-                cnt += 1
-                cnt_desc += 1
+                    avg_len_alt_labels += len(data["alt_label"] if data.get("alt_label") else [])
+                    avg_len_must_skills += len(data["must_skills"] if data.get("must_skills") else [])
+                    avg_len_opt_skills += len(data["opt_skills"] if data.get("opt_skills") else [])
+                    cnt += 1
+                    cnt_desc += 1
 
                     list_of_entities_and_descriptions.append({data["esco_code"]: f"{data['pref_label']} {description}"})
 
@@ -191,7 +186,7 @@ def main():
                             tokens_must_skill = tokenizer(must_skill_description)
                             avg_len_descriptions += len(tokens_must_skill)
                             list_of_entities_and_descriptions.append({data["esco_code"]: f"{must_skill['title']} "
-                                                                                         f"{must_skill_description}"})
+                                                                                            f"{must_skill_description}"})
                             cnt_desc += 1
 
                     if data.get("opt_skills"):
@@ -200,7 +195,7 @@ def main():
                             tokens_opt_skill = tokenizer(opt_skill_description)
                             avg_len_descriptions += len(tokens_opt_skill)
                             list_of_entities_and_descriptions.append({data["esco_code"]: f"{opt_skill['title']} "
-                                                                                         f"{opt_skill_description}"})
+                                                                                            f"{opt_skill_description}"})
                             cnt_desc += 1
 
                 logging.info(f"current language: {lang}")
@@ -212,14 +207,16 @@ def main():
                 statistics[lang] = {"instances": len(list_of_entities_and_descriptions),
                                     "len_desc": {avg_len_descriptions / cnt_desc}}
 
-                with open(f"resources/esco_taxonomy/processed_esco_descriptions_all.json", "a+", encoding="utf-8") as\
-                        fw:
+                with open(f"resources/processed_esco_descriptions_all_new.json", "a+", encoding="utf-8") as fw:
                     for item in list_of_entities_and_descriptions:
                         fw.write(json.dumps(item, ensure_ascii=False))
                         fw.write("\n")
 
             logging.info(statistics)
 
+    # if not os.path.isfile(f"{sys.argv[1]}/esco_features.json"):
+    TextDatasetForEscoRelationPrediction(file_path=f"{sys.argv[1]}/processed_esco_descriptions_all_new.json")
+        # exit(1)
 
 if __name__ == '__main__':
     main()

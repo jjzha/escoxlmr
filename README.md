@@ -41,7 +41,7 @@ conda env create -f environment.yml
 
 ## ESCO API
 
-❗Next install the ESCO API:
+❗Next install the ESCO API (we used v1.0.9):
 
 1. Download the ESCO API from https://esco.ec.europa.eu/en/use-esco/download
 2. Run the API locally or where you prefer.
